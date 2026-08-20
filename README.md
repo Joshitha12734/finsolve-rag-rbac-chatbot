@@ -614,58 +614,6 @@ pytest tests/test_ui_playwright.py --headed
 | Well Documented README | This file: setup, tech stack, roles, usage examples, architecture, admin panel, HR insights, evaluation, testing, deployment |
 | Scalability & Extensibility | New role/department = one config entry; new structured dataset = drop a CSV; new document = upload via Admin tab; new classification tier = extend `config.py`; BM25 → hybrid embeddings scales retrieval without touching the rest of the app; Docker Compose for horizontal deployment |
 
-### Suggested demo walkthrough (for your video)
-
-1. Log in as `sam.employee` → say "I want to request leave from Aug 10 to
-   Aug 12 for a family event" → show it executes immediately with a
-   confirmation and request ID (route: "⚙️ Workflow Action"). Try it
-   again with a field missing ("I want to request leave") → show the
-   assistant asks for what's missing instead of failing.
-2. Still as `sam.employee` → try "I want an expense reimbursement" → show
-   it's not offered (finance-only action, RBAC-filtered before the LLM
-   even considers it).
-3. Log in as `sam.employee` → ask an engineering question → show it's
-   politely declined (no data leak).
-4. Log in as `peter.pandey` (engineering) → ask the same engineering
-   question → show it's answered with a citation, confidence badge, and
-   expand the retrieved-passages view.
-5. Log in as `priya.finance` (finance) → ask "what is the risk mitigation
-   strategy for Q4 2024?" → show it comes back empty despite Finance
-   department access (confidential classification), then log in as
-   `tony.sharma` and ask the same thing → show it works — a concrete,
-   visible demonstration of metadata-aware RBAC beyond folders.
-6. Log in as `anita.hr` (HR) → ask "list employees with performance rating
-   5 in the Data department" → show the SQL agent generating and running
-   real SQL, with the route indicator showing "🗄️ Structured (SQL)", then
-   switch to the **HR Insights** tab to show the pandas-computed dashboard.
-7. Log in as `tony.sharma` (c-level) → open the **Admin** tab → show the
-   **low-code workflow builder**: create a brand-new action live (e.g.
-   "Password Reset Request") with no code, then switch to Chat and
-   trigger it immediately — this is the single most JD-relevant moment
-   to linger on if you're applying somewhere that cares about low-code
-   platforms. Then point out the analytics at the top (total queries,
-   denial rate, most-accessed docs) building up live as you demo, upload
-   a new engineering document live, switch back to Chat and ask about
-   it — show it's instantly answerable.
-8. From the same Admin tab, create a new user with a role, log in as them
-   in another window to show the new account works immediately.
-9. Show `pytest -v tests/` passing live (74 tests), and optionally `python
-   -m evaluation.evaluate` to show automated quality scoring, and/or
-   `docker compose up --build` to show it's deployment-ready.
-
-## Publishing to GitHub
-
-```bash
-cd app
-git init
-git add .
-git commit -m "FinSolve RBAC RAG chatbot"
-git branch -M main
-git remote add origin https://github.com/<your-username>/<your-repo>.git
-git push -u origin main
-```
-
-(`.env` is already gitignored, so your API key won't be committed.)
 
 ## Production-hardening: reranking, security, feedback, observability
 
@@ -702,6 +650,7 @@ real team would use to know what to fix — not just a claim that feedback
 retrieval+reranking, security scan, LLM generation) — viewable per-message
 in the chat UI's "Why this answer?" panel, so you can see exactly where
 time is going on any given request, not just a single total latency number.
+
 
 ## 🧪 Testing & Engineering Validation
 
