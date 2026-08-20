@@ -1,0 +1,61 @@
+[
+  {
+    "id": "leave_request",
+    "name": "Leave Request",
+    "description": "Submit a request for time off / annual leave.",
+    "department": "general",
+    "required_fields": [
+      "start_date",
+      "end_date",
+      "reason"
+    ],
+    "keywords": [
+      "leave request",
+      "request leave",
+      "time off",
+      "take leave",
+      "apply for leave",
+      "vacation request"
+    ],
+    "confirmation_template": "Your leave request from {start_date} to {end_date} ({reason}) has been submitted for approval. Request ID: #{request_id}. You'll be notified once your manager reviews it."
+  },
+  {
+    "id": "it_ticket_escalation",
+    "name": "IT Ticket Escalation",
+    "description": "Escalate an IT support issue that needs urgent attention.",
+    "department": "general",
+    "required_fields": [
+      "issue_description",
+      "urgency"
+    ],
+    "keywords": [
+      "it issue",
+      "it ticket",
+      "escalate",
+      "tech support",
+      "it support",
+      "system down",
+      "password reset"
+    ],
+    "confirmation_template": "Your IT issue has been escalated (urgency: {urgency}). Ticket ID: #{request_id}. IT Support will follow up on: {issue_description}"
+  },
+  {
+    "id": "expense_reimbursement",
+    "name": "Expense Reimbursement Request",
+    "description": "Request reimbursement for a business expense.",
+    "department": "finance",
+    "required_fields": [
+      "amount",
+      "category",
+      "description"
+    ],
+    "keywords": [
+      "reimbursement",
+      "reimburse",
+      "expense claim",
+      "expense request",
+      "claim expense"
+    ],
+    "confirmation_template": "Your reimbursement request for {amount} ({category}) has been submitted. Request ID: #{request_id}. Details: {description}"
+  }
+]
