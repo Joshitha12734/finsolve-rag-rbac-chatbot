@@ -6,10 +6,6 @@ Finance, Marketing, HR, Engineering and Executive data — while enforcing
 strict role-based access control (RBAC) so nobody sees data outside their
 department.
 
-Built for the Codebasics "DS-RPC-01" resume project challenge. The hybrid
-SQL+RAG query engine is inspired by [Suganya G's submission](https://github.com/Sugiuma/RBAC-Project)
-to the same challenge — credit to her for the pattern of routing structured
-questions to a SQL agent and falling back to RAG.
 
 ## Why this architecture
 
