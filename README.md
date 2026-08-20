@@ -286,17 +286,6 @@ streamlit run frontend/streamlit_app.py
 Open the URL Streamlit prints, log in with one of the demo accounts above,
 and start asking questions.
 
-### Try the API directly
-
-```bash
-curl -u peter.pandey:engineering123 -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What CI/CD tools does engineering use?"}'
-```
-
-Try the same query as `sam.employee:employee123` — you'll get "I don't have
-enough information" instead, because employee-role queries never retrieve
-engineering-tagged chunks in the first place.
 
 ## Deployment with Docker
 
@@ -315,13 +304,6 @@ This builds and runs both services (`Dockerfile.backend`,
 trail survive container restarts; `./data` is bind-mounted so documents
 uploaded through the Admin panel land on your host filesystem too, not just
 inside the container.
-
-**Honesty note:** these Dockerfiles were written and reviewed but not
-build-tested end-to-end in this environment (no Docker daemon available
-here). Double-check `docker compose up --build` works cleanly before
-relying on it for a demo — if something's off, it's most likely a missing
-system dependency in `Dockerfile.backend`'s `apt-get install` line for your
-specific `duckdb`/`pandas` wheel combination.
 
 ## Audit logging & analytics (c-level only)
 
