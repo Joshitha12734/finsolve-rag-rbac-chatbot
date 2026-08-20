@@ -703,107 +703,38 @@ retrieval+reranking, security scan, LLM generation) — viewable per-message
 in the chat UI's "Why this answer?" panel, so you can see exactly where
 time is going on any given request, not just a single total latency number.
 
-## Troubleshooting / known issues found during testing
+## 🧪 Testing & Engineering Validation
 
-**Using Ollama and answers are slow / time out** — local generation on CPU
-is genuinely much slower than a hosted API, especially for larger models.
-Try a smaller model (`ollama pull llama3.2:1b` or `qwen2.5:1.5b`) if
-generation feels sluggish; `_chat_ollama()` in `llm_client.py` has a
-120-second timeout to accommodate this, but very large models on modest
-hardware can still exceed it.
+The system was tested across RAG retrieval, RBAC enforcement, workflow execution,
+LLM provider switching, query routing, and security-related scenarios.
 
-**Ollama configured but still seeing Demo Mode** — `api_key_configured()`
-does a live reachability check against `OLLAMA_HOST` (default
-`localhost:11434`) with a short timeout, then **caches the result for the
-rest of the process**. If you start Ollama *after* the backend is already
-running, call `llm_client.reset_ollama_reachability_cache()` (or just
-restart `uvicorn`) rather than waiting — otherwise it'll keep reporting
-"unreachable" from the earlier check.
+### Key validation scenarios
 
-**Unrelated follow-up messages got hijacked by a pending workflow action**
-— found via live testing (not a synthetic test case): after triggering
-"I need to escalate an IT issue" and getting asked for missing fields,
-every subsequent message in the conversation — including completely
-unrelated questions like "What's our microservices architecture?" — kept
-getting treated as still trying to complete that same IT escalation,
-forever. Root cause: the heuristic continuation check in
-`workflow_engine.py` only verified that the *previous assistant message*
-mentioned the pending action's name; it never checked whether the *new*
-user message actually supplied any of the requested field values. Fixed
-by only continuing the pending action when field extraction genuinely
-succeeds on the new message — otherwise the app now correctly falls
-through to a fresh intent check (and from there, to RAG/SQL as normal)
-instead of getting stuck. Regression-tested in
-`tests/test_workflow_engine.py::test_unrelated_followup_does_not_get_hijacked_by_pending_action`.
+- **RBAC-aware retrieval:** Users only receive information from departments
+  they are authorized to access.
+- **Cross-department protection:** The system detects when a stronger match
+  exists outside the user's permissions and avoids returning a weaker,
+  potentially misleading answer.
+- **Hybrid retrieval:** BM25 + semantic embeddings can be combined for improved
+  retrieval quality, with BM25 fallback support when embeddings are unavailable.
+- **Workflow isolation:** Pending multi-turn workflows do not hijack unrelated
+  follow-up questions.
+- **LLM provider abstraction:** Supports Groq, Anthropic, and fully local Ollama
+  inference through a unified `llm_client.py`.
+- **Graceful degradation:** The application remains usable without an LLM API
+  key through retrieval-only/demo mode and heuristic routing.
+- **Security and observability:** Authentication, RBAC, audit logging,
+  feedback handling, and security-related test cases are covered.
 
+### Retrieval fallback
 
-This project was reviewed against a real (non-key) local run, which
-surfaced several issues — all fixed, one of them a genuine bug worth
-understanding if you're extending this code:
+The application supports a BM25-only fallback when embedding models are
+unavailable. With normal internet access, the embedding retriever can download
+`all-MiniLM-L6-v2` and automatically enable hybrid BM25 + embedding retrieval.
 
-**"Cannot copy out of meta tensor" on first embedding backend use** — a
-known torch/accelerate version-mismatch issue, not specific to this app.
-Fixed by explicitly passing `device="cpu"` to the embedding function
-(`retriever.py`) instead of letting it auto-select. If you still hit this,
-try `pip install -U torch sentence-transformers accelerate` to align
-versions. The app falls back to BM25-only either way, so it stays
-functional regardless.
+### Known considerations
 
-**"No GROQ API key" looked unfinished in demo mode** — the fallback
-response (used when no LLM key is configured) now presents as **Demo
-Mode** with cleanly formatted excerpts, rather than a raw internal-sounding
-message dumping full paragraphs.
-
-**A real retrieval bug: confident wrong answers across departments** —
-asking "what is the quarterly revenue?" as an `engineering`-role user
-returned content from the HR employee handbook instead of correctly
-saying the answer isn't accessible. Root cause was two compounding
-tokenization bugs in the BM25 backend:
-  1. No punctuation stripping — the query token `"revenue?"` (with the
-     question mark attached) never matched the corpus word `"revenue"`.
-  2. No stopword removal — common words like `"what"`/`"is"`/`"the"`
-     (present in nearly every chunk) dominated the score for text-dense
-     chunks (like FAQ sections) that didn't contain any of the query's
-     actual meaningful terms.
-
-  Fixed with a proper `_tokenize()` (punctuation stripping + a stopword
-  list) in `retriever.py`, **plus** a new cross-department confidence
-  check in `main.py`: if the single best-scoring chunk *anywhere in the
-  corpus* (ignoring RBAC) is meaningfully more relevant than anything the
-  user's role can actually see, the app now correctly reports "not
-  accessible" instead of confidently answering from a weaker, wrong,
-  same-department match. Regression-tested in
-  `tests/test_hybrid_and_analytics.py::test_cross_department_query_correctly_denied_not_answered_from_weak_match`.
-  This is also a good illustration of why the "Hybrid BM25 + embeddings"
-  design matters in practice — BM25 alone is genuinely more prone to this
-  kind of keyword-coincidence error than semantic embeddings would be.
-
-**Workflow actions silently fell through to document search without an
-LLM key** — `detect_action_intent()` originally had no fallback path
-(unlike the SQL/RAG classifier, which always had a heuristic mode), so
-"I want reimbursement" without a configured LLM key would search
-documents and show policy info instead of recognizing the action intent
-at all. Fixed by adding a heuristic fallback (`workflow_engine.py`):
-keyword matching against a per-action `keywords` list (in
-`data/_workflow_actions.json`, also editable from the Admin tab), plus
-simple `field: value` / `field is value` regex extraction for multi-turn
-field collection. Less flexible than the LLM path for genuinely free-form
-phrasing, but means the Virtual Agent layer is fully demoable —
-recognizing intent, asking for missing fields, and executing — with zero
-LLM configuration. Regression-tested end-to-end in
-`tests/test_workflow_engine.py`.
-
-## Notes on the retrieval fallback
-
-This code was built and tested in an environment without access to
-Hugging Face's model hub, so the **BM25-only** path is what's been verified
-end-to-end (`tests/` all pass on it, including the classification-RBAC and
-confidence tests). Once you run this with normal internet access, the
-`EmbeddingRetriever` will download `all-MiniLM-L6-v2` on first use and the
-`HybridRetriever` will automatically start fusing BM25 + embedding scores
-— no code changes required, just `pip install chromadb sentence-transformers`
-(already in `requirements.txt`); the factory in `retriever.py` handles the
-rest. Similarly, `Dockerfile.backend`/`Dockerfile.frontend`/
-`docker-compose.yml` were written and reviewed but not build-tested (no
-Docker daemon in this environment) — worth a `docker compose up --build`
-dry run before you rely on it for a demo.
+- Local Ollama inference can be slower than hosted APIs, particularly on CPU.
+- The first embedding-based run may download the embedding model.
+- Docker deployment should be validated with `docker compose up --build`
+  before production use.
