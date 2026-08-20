@@ -582,19 +582,19 @@ pytest tests/test_ui_playwright.py --headed
   full stack (see Deployment below) — not required for the challenge, but
   signals this was built to actually run somewhere, not just on one laptop.
 
-## How this maps to the evaluation criteria
+## How This Maps to the Evaluation Criteria
 
-| Criterion | Where it's addressed |
+| Criterion | Where It's Addressed |
 |---|---|
-| Functionality | `/chat` returns role-filtered, cited answers via action execution, SQL, or hybrid RAG depending on intent; verified end-to-end across 74 tests |
-| Code Quality | Modular files, docstrings/comments throughout, Pydantic validation, type hints, read-only SQL guardrails, filename sanitization on upload |
-| Innovation | Agentic workflow automation (low-code, Virtual Agent layer), hybrid SQL+RAG routing, BM25+embedding fusion with LLM reranking, metadata-aware classification RBAC, calibrated confidence scoring, live document ingestion, audit logging + analytics, HR analytics, Docker packaging |
-| Presentation | This README + suggested demo flow below |
-| NLP Query Understanding | Query classifier separates structured vs. narrative intent; clarifying-question behavior for vague queries; natural-language CSV row conversion for the RAG path; hybrid lexical+semantic matching handles both keyword and paraphrase queries |
-| User Experience | Streamlit chat UI with role badges, dark mode, confidence indicators, retrieved-passage viewer, per-role suggested questions (including workflow-triggering examples), source citations, route indicator (action/SQL/RAG), HR Insights and Admin dashboards with a low-code workflow builder, login/logout flow |
-| Modularity | `auth.py` / `ingest.py` / `query_classifier.py` / `workflow_engine.py` / `sql_agent.py` / `hr_analytics.py` / `admin.py` / `audit.py` / `retriever.py` / `llm.py` / `llm_client.py` / `main.py` each own one concern; frontend fully decoupled via HTTP |
-| Well Documented README | This file: setup, tech stack, roles, usage examples, architecture, admin panel, HR insights, evaluation, testing, deployment |
-| Scalability & Extensibility | New role/department = one config entry; new structured dataset = drop a CSV; new document = upload via Admin tab; new classification tier = extend `config.py`; BM25 → hybrid embeddings scales retrieval without touching the rest of the app; Docker Compose for horizontal deployment |
+| **Functionality** | `/chat` provides role-filtered, cited responses through Action, SQL, or RAG routes. Verified with 74 tests. |
+| **Code Quality** | Modular architecture, type hints, docstrings, Pydantic validation, read-only SQL guardrails, and filename sanitization. |
+| **Innovation** | Agentic workflow automation, hybrid SQL + RAG routing, BM25 + embedding retrieval, LLM reranking, metadata-aware RBAC, confidence scoring, document ingestion, audit logging, and HR analytics. |
+| **Presentation** | Streamlit interface with role-aware UI, confidence indicators, source citations, route visibility, dashboards, and explainability. |
+| **NLP Query Understanding** | Intent classification, structured vs. narrative query routing, clarification handling, and hybrid lexical + semantic retrieval. |
+| **User Experience** | Role-based suggested questions, source citations, retrieved-passage viewer, route indicators, login/logout, HR Insights, and Admin dashboards. |
+| **Modularity** | Authentication, ingestion, classification, workflow automation, SQL, analytics, auditing, retrieval, and LLM functionality are separated into dedicated modules. Frontend and backend communicate through HTTP. |
+| **Documentation** | Setup, architecture, tech stack, roles, usage, administration, evaluation, testing, and deployment are documented in this README. |
+| **Scalability & Extensibility** | Roles and classifications are configuration-driven, documents can be ingested through the Admin interface, structured datasets can be added as CSVs, and Docker Compose supports deployment. |
 
 
 ## Production-hardening: reranking, security, feedback, observability
@@ -634,7 +634,7 @@ in the chat UI's "Why this answer?" panel, so you can see exactly where
 time is going on any given request, not just a single total latency number.
 
 
-## 🧪 Testing & Engineering Validation
+## Testing & Engineering Validation
 
 The system was tested across RAG retrieval, RBAC enforcement, workflow execution,
 LLM provider switching, query routing, and security-related scenarios.
